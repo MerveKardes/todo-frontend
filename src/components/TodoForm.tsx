@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 type TodoFormProps = {
-    onAddTodo: (description: string) => void;
+    onAddTodo: (description: string) => Promise<boolean>;
 };
 
 export default function TodoForm(props: TodoFormProps) {
@@ -15,13 +15,20 @@ export default function TodoForm(props: TodoFormProps) {
             return;
         }
 
-        props.onAddTodo(description);
-        setDescription("");
+        props.onAddTodo(description).then(success => {
+            if (success) {
+                setDescription("");
+            }
+        });
     }
 
     return (
         <form className="todo-form" onSubmit={handleSubmit}>
+            <label htmlFor="new-todo-description" className="form-label">
+                New task
+            </label>
             <input
+                id="new-todo-description"
                 type="text"
                 placeholder="Enter a new task..."
                 value={description}

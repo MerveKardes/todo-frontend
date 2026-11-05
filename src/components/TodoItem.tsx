@@ -1,10 +1,10 @@
 import type { Todo } from "../types/Todo";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 type TodoItemProps = {
     todo: Todo;
     onDelete: (id: string) => void;
-    onUpdate: (id: string, description: string, status: Todo["status"]) => void;
+    onUpdate: (id: string, description: string, status: Todo["status"]) => Promise<boolean>;
 };
 
 export default function TodoItem(props: TodoItemProps) {
@@ -12,22 +12,53 @@ export default function TodoItem(props: TodoItemProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [description, setDescription] = useState(props.todo.description);
     const [status, setStatus] = useState<Todo["status"]>(props.todo.status);
+    const descriptionId = useId();
+    const statusId = useId();
 
-    function handleUpdate() {
-        props.onUpdate(props.todo.id, description, status);
+    function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        if (description.trim() === "") {
+            return;
+        }
+
+        props.onUpdate(props.todo.id, description, status).then(success => {
+            if (success) {
+                setIsEditing(false);
+            }
+        });
+    }
+
+    function handleEdit() {
+        setDescription(props.todo.description);
+        setStatus(props.todo.status);
+        setIsEditing(true);
+    }
+
+    function handleCancel() {
+        setDescription(props.todo.description);
+        setStatus(props.todo.status);
         setIsEditing(false);
     }
 
     return (
         <div className="todo-card">
             {isEditing ? (
-                <div>
-                    <input className="edit-input"
+                <form onSubmit={handleSubmit}>
+                    <label htmlFor={descriptionId} className="form-label">
+                        Description
+                    </label>
+                    <input id={descriptionId}
+                        className="edit-input"
                         value={description}
                         onChange={(event) => setDescription(event.target.value)}
                     />
 
-                    <select className="edit-select"
+                    <label htmlFor={statusId} className="form-label">
+                        Status
+                    </label>
+                    <select id={statusId}
+                        className="edit-select"
                         value={status}
                         onChange={(event) => setStatus(event.target.value as Todo["status"])}
                     >
@@ -36,15 +67,15 @@ export default function TodoItem(props: TodoItemProps) {
                         <option value="DONE">DONE</option>
                     </select>
 
-                    <button className="edit-button" onClick={handleUpdate}>Save</button>
-                    <button className="cancel-button" onClick={() => setIsEditing(false)}>Cancel</button>
-                </div>
+                    <button type="submit" className="edit-button">Save</button>
+                    <button type="button" className="cancel-button" onClick={handleCancel}>Cancel</button>
+                </form>
             ) : (
                 <div>
                     <h3>{props.todo.description}</h3>
                     <p>{props.todo.status}</p>
 
-                    <button className="edit-button" onClick={() => setIsEditing(true)}>Edit</button>
+                    <button className="edit-button" onClick={handleEdit}>Edit</button>
                     <button className="delete-button" onClick={() => props.onDelete(props.todo.id)}>
                         Delete
                     </button>

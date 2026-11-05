@@ -9,7 +9,7 @@ export type TodoListProps = {
         id: string,
         description: string,
         status: Todo["status"]
-    ) => void;
+    ) => Promise<boolean>;
 };
 
 export default function TodoList(props: TodoListProps) {

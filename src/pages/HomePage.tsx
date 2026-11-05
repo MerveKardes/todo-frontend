@@ -4,13 +4,13 @@ import TodoList from "../components/TodoList";
 
 type HomePageProps = {
     todos: Todo[];
-    onAddTodo: (description: string) => void;
+    onAddTodo: (description: string) => Promise<boolean>;
     onDelete: (id: string) => void;
     onUpdate: (
         id: string,
         description: string,
         status: Todo["status"]
-    ) => void;
+    ) => Promise<boolean>;
 };
 
 function HomePage(props: HomePageProps) {
